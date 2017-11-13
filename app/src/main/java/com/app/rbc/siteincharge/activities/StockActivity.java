@@ -25,6 +25,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,6 +41,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.app.rbc.siteincharge.R;
+import com.app.rbc.siteincharge.adapters.CustomStockSiteListAdapter;
 import com.app.rbc.siteincharge.adapters.PO_detail_adapter;
 import com.app.rbc.siteincharge.adapters.Stock_detail_adapter;
 import com.app.rbc.siteincharge.adapters.Transaction_detail_adapter;
@@ -592,7 +594,6 @@ public class StockActivity extends AppCompatActivity implements SearchView.OnQue
             }
         }
 
-
         public void show_stock_details() {
 
             stockDetail = new Gson().fromJson(AppUtil.getString(getContext().getApplicationContext(), TagsPreferences.CATEGORY_DETAILS), StockCategoryDetails.class).getStockDetails();
@@ -611,13 +612,28 @@ public class StockActivity extends AppCompatActivity implements SearchView.OnQue
             recyclerView.setItemAnimator(new DefaultItemAnimator());
             recyclerView.addItemDecoration(new DividerItemDecoration(getContext(), LinearLayoutManager.VERTICAL));
 
+            List<String> sites = new ArrayList<>();
+            for(int i = 0 ; i < stockDetail.size() ; i++) {
+                int j;
+                for(j = 0 ; j < sites.size() ; j++) {
+                    if(sites.get(j).equalsIgnoreCase(stockDetail.get(i).getMsitename())) {
+                        break;
+                    }
+                }
+                if(j == sites.size()) {
+                    sites.add(stockDetail.get(i).getMsitename());
+                    Log.e("Site count",sites.size()+"");
+                }
+            }
+            Log.e("totla Stocks",stockDetail.size()+"");
 
-            Stock_detail_adapter adapter = new Stock_detail_adapter(stockDetail,getContext());
+
+            CustomStockSiteListAdapter adapter = new CustomStockSiteListAdapter(getContext(),stockDetail,
+                    sites);
             recyclerView.setAdapter(adapter);
             adapter.notifyDataSetChanged();
 
         }
-
         private void set_show_stock_recycler(List<StockCategoryDetails.StockDetail> stockDetail) {
             Stock_detail_adapter adapter = new Stock_detail_adapter(stockDetail,getContext());
             recyclerView.setAdapter(adapter);

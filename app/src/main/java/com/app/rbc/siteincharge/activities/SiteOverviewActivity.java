@@ -5,11 +5,17 @@ import android.support.multidex.MultiDex;
 import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.widget.Toast;
 
 import com.app.rbc.siteincharge.R;
 import com.app.rbc.siteincharge.fragments.SiteOverviewFragment;
 import com.app.rbc.siteincharge.fragments.SiteOverviewListFragment;
+import com.app.rbc.siteincharge.models.db.models.Site;
+import com.app.rbc.siteincharge.utils.AppUtil;
+import com.app.rbc.siteincharge.utils.TagsPreferences;
 import com.orm.SugarContext;
+
+import java.util.List;
 
 public class SiteOverviewActivity extends AppCompatActivity {
     private Toolbar toolbar;
@@ -27,8 +33,7 @@ public class SiteOverviewActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         SugarContext.init(this);
         MultiDex.install(this);
-        setFragment(1);
-
+        findSiteOfIncharge();
     }
 
 
@@ -38,6 +43,19 @@ public class SiteOverviewActivity extends AppCompatActivity {
 
     }
 
+    private void findSiteOfIncharge() {
+        String incharge_id = AppUtil.getString(getApplicationContext(), TagsPreferences.USER_ID);
+        List<Site> siteList = Site.find(Site.class,"incharge = ?",incharge_id);
+        if(siteList.size() != 0) {
+            setFragment(2,siteList.get(0).getId());
+        }
+        else {
+            onBackPressed();
+            Toast.makeText(getApplicationContext(),
+                    "No site found for this incharge",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
 
     public void setFragment(int code,Object... data) {
         FragmentManager fm = getSupportFragmentManager();
@@ -54,7 +72,7 @@ public class SiteOverviewActivity extends AppCompatActivity {
                 siteOverviewFragment = new SiteOverviewFragment();
                 siteOverviewFragment.site = (long)data[0];
                 fm.beginTransaction()
-                        .replace(R.id.fragment_container,siteOverviewFragment).addToBackStack(null)
+                        .replace(R.id.fragment_container,siteOverviewFragment)
                         .commit();
                 break;
         }
